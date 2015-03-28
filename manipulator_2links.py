@@ -1,5 +1,7 @@
 from casadi import *
 from numpy import *
+from matplotlib import pyplot as plt
+import time
 
 class manipulator_2links:
     """
@@ -57,7 +59,46 @@ class manipulator_2links:
         
         self.fd = mul(self.H.inv(), mul(self.B,self.u)-mul(self.C,self.dq)-self.G)
         self.fd_eval = SXFunction([self.q, self.dq, self.u], [self.fd])
-        self.fd_eval.init()      
+        self.fd_eval.init()
+        
+        self.plotter = { 'figure':None, 'axes':None, 'j0':None, 'j1':None, 'l0':None, 'l1':None }
+        
+    def plot(self,q):
+        [ee_fk] = self.fk_eval([q])
+        j1 = ee_fk[:,0]
+        ee = ee_fk[:,1]
+        
+        if(self.plotter['figure'] is None):
+            self.plotter['figure'] = plt.figure(figsize=(16./2,9./2))
+            self.plotter['axes'] = plt.axes(xlim=(-4, 4), ylim=(-4.5/2, 4.5/2))
+            self.plotter['figure'].show()
+            
+            self.plotter['j0'] = plt.Circle((0,0),radius=.1,fc='r')
+            self.plotter['j1'] = plt.Circle(j1,radius=.1,fc='r')
+            self.plotter['l0'] = plt.Line2D((0, j1[0]), (0,j1[1]), lw=5., 
+                                 ls='-', marker='.', 
+                                 markersize=10, 
+                                 markerfacecolor='r', 
+                                 markeredgecolor='r', 
+                                 alpha=0.5)
+            self.plotter['l1'] = plt.Line2D((j1[0],ee[0]), (j1[1],ee[1]), lw=5., 
+                                 ls='-', marker='.', 
+                                 markersize=10, 
+                                 markerfacecolor='r', 
+                                 markeredgecolor='r', 
+                                 alpha=0.5)
+                                 
+            self.plotter['axes'].add_line(self.plotter['l0'])
+            self.plotter['axes'].add_line(self.plotter['l1'])
+        
+        else:
+            self.plotter['l0'].set_data(((0, j1[0]), (0,j1[1])))
+            self.plotter['l1'].set_data(((j1[0],ee[0]), (j1[1],ee[1])))
+            
+        #self.plotter['axes'].add_line(self.plotter['j0'])
+        #self.plotter['axes'].add_line(self.plotter['j1'])
+
+        plt.draw()
         
 if __name__=='__main__':
     manip = manipulator_2links(DMatrix.eye(2))    
@@ -78,3 +119,5 @@ if __name__=='__main__':
     print "fd:", manip.fd
     u_eval = [1.0, 1.0]
     print "fd_eval:", manip.fd_eval([q_eval, dq_eval, u_eval])
+    
+    manip.plot(q_eval)
