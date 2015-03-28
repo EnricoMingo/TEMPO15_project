@@ -91,20 +91,34 @@ x_final = [[pi/2,0,0,0]] #upright!
 w_min['X',N] = x_final
 w_max['X',N] = x_final
 
-w_min["X",0] = x_current
-w_max["X",0] = x_current
+for i in range(1):
 
-# Pass data to NLP solver
-nlp_solver.setInput(w_k,"x0")
-nlp_solver.setInput(w_min,"lbx")
-nlp_solver.setInput(w_max,"ubx")
+    w_min["X",0] = x_current
+    w_max["X",0] = x_current
+
+    # Pass data to NLP solver
+    nlp_solver.setInput(w_k,"x0")
+    nlp_solver.setInput(w_min,"lbx")
+    nlp_solver.setInput(w_max,"ubx")
    
-# Solve the OCP
-nlp_solver.evaluate()
+    # Solve the OCP
+    nlp_solver.evaluate()
     
-# Extract from the solution the first control
-sol = W(nlp_solver.getOutput("x"))
-u_nmpc = sol["U",0]
+    # Extract from the solution the first control
+    sol = W(nlp_solver.getOutput("x"))
+    u_nmpc = sol["U",0]
+    
+    # Simulate the system with this control
+    [x_current] = F([x_current, u_nmpc, h])
+  
+    t += T/N
+    
+    # Shift the time to have a better initial guess
+    # For the next time horizon
+    w_k["X",:-1] = sol["X",1:]
+    w_k["U",:-1] = sol["U",1:]
+    w_k["X",-1] = sol["X",-1]
+    w_k["U",-1] = sol["U",-1]
 
 manip.plotTraj(np.array(vertcat(sol["X",:,0:2])).reshape(N+1,2),t=T/N)
 
