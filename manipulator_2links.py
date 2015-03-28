@@ -109,7 +109,7 @@ class manipulator_2links:
         anim = animation.FuncAnimation(self.plotter['figure'], 
                                        p, 
                                        frames=qTraj.shape[0], 
-                                       interval=500,
+                                       interval=100,
                                        blit=True)
         plt.draw()
         
@@ -134,3 +134,8 @@ if __name__=='__main__':
     print "fd_eval:", manip.fd_eval([q_eval, dq_eval, u_eval])
     
     manip.plot(q_eval)
+    
+    traj = [[q_eval[0]+i*0.1,q_eval[1]+i*0.1] for i in range(10)]
+    manip.plotTraj(np.array(traj))
+    
+    
