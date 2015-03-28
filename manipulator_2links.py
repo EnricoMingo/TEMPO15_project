@@ -1,6 +1,7 @@
 from casadi import *
 from numpy import *
 from matplotlib import pyplot as plt
+from matplotlib import animation
 import time
 
 class manipulator_2links:
@@ -98,6 +99,18 @@ class manipulator_2links:
         #self.plotter['axes'].add_line(self.plotter['j0'])
         #self.plotter['axes'].add_line(self.plotter['j1'])
 
+        plt.draw()
+        return [self.plotter['l0'], self.plotter['l1']]
+        
+    def plotTraj(self,qTraj):
+        
+        p = lambda i : self.plot(qTraj[i,:])
+
+        anim = animation.FuncAnimation(self.plotter['figure'], 
+                                       p, 
+                                       frames=qTraj.shape[0], 
+                                       interval=500,
+                                       blit=True)
         plt.draw()
         
 if __name__=='__main__':
