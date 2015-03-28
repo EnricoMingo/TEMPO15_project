@@ -105,20 +105,22 @@ class manipulator_2links:
         plt.draw()
         return [self.plotter['l0'], self.plotter['l1']]
         
-    def plotTraj(self,qTraj):
+    def plotTraj(self,qTraj,t=.001):
         
+        self.plot(qTraj[0,:])
         p = lambda i : self.plot(qTraj[i,:])
-
         anim = animation.FuncAnimation(self.plotter['figure'], 
-                                       p, 
+                                       p,
                                        frames=qTraj.shape[0], 
-                                       interval=1,
+                                       interval=t*1000.,
                                        blit=True)
         plt.draw()
    
         
 if __name__=='__main__':
-    manip = manipulator_2links(DMatrix.eye(2))    
+    B = DMatrix(2,1)
+    B[1] = 1.0
+    manip = manipulator_2links(B)    
     print "l:", manip.l 
     print "d:", manip.d  
     print "m:", manip.m
@@ -134,7 +136,7 @@ if __name__=='__main__':
     print "fk:", manip.fk
     print "fk_eval:", manip.fk_eval([q_eval])
     print "fd:", manip.fd
-    u_eval = [0.0, 0.0]
+    u_eval = [0.0]
     print "fd_eval:", manip.fd_eval([vertcat([q_eval, dq_eval]), u_eval])
     
     #SIMULATION 
@@ -152,7 +154,6 @@ if __name__=='__main__':
         trj[i,0] = q_eval[0]
         trj[i,1] = q_eval[1] 
         
-    manip.plot(trj[0,:])    
     manip.plotTraj(trj)
     
 	
