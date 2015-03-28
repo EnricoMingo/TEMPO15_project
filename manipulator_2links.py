@@ -7,13 +7,13 @@ import time
 class manipulator_2links:
     """
     Ref. Frame:
+        y        
+        |
+        |
+        |
+        |
+        |
         o-------------->x
-        |
-        | 
-        |  
-        |
-        v
-        y
     """
     def __init__(self, B):
         self.q = SX.sym("q",2)
@@ -22,7 +22,7 @@ class manipulator_2links:
         self.lc = [self.l[0]/2.0, self.l[1]/2.0] #[m]
         self.m = [1.0, 1.0] #[Kg]
         self.I = [0.01, 0.01] #[Kg*m^2]
-        self.g = 9.81 #[m/s^2]
+        self.g = -9.81 #[m/s^2]
         
         self.B = B
         self.u = SX.sym("u",B.size2())
@@ -62,7 +62,7 @@ class manipulator_2links:
         self.fd_eval = SXFunction([vertcat([self.q, self.dq]), self.u], [vertcat([self.dq, self.fd])])
         self.fd_eval.init()   
 		
-		self.plotter = { 'figure':None, 'axes':None, 'j0':None, 'j1':None, 'l0':None, 'l1':None }
+        self.plotter = { 'figure':None, 'axes':None, 'j0':None, 'j1':None, 'l0':None, 'l1':None }
         
     def plot(self,q):
         [ee_fk] = self.fk_eval([q])
@@ -96,9 +96,6 @@ class manipulator_2links:
             self.plotter['l0'].set_data(((0, j1[0]), (0,j1[1])))
             self.plotter['l1'].set_data(((j1[0],ee[0]), (j1[1],ee[1])))
             
-        #self.plotter['axes'].add_line(self.plotter['j0'])
-        #self.plotter['axes'].add_line(self.plotter['j1'])
-
         plt.draw()
         return [self.plotter['l0'], self.plotter['l1']]
         
@@ -109,7 +106,7 @@ class manipulator_2links:
         anim = animation.FuncAnimation(self.plotter['figure'], 
                                        p, 
                                        frames=qTraj.shape[0], 
-                                       interval=100,
+                                       interval=10,
                                        blit=True)
         plt.draw()
    
@@ -135,16 +132,23 @@ if __name__=='__main__':
     print "fd_eval:", manip.fd_eval([vertcat([q_eval, dq_eval]), u_eval])
     
     #SIMULATION
+    
     intg = simpleRK(manip.fd_eval, 10)  
     intg.init()
-    
-    h_test = 0.01;
-    [x_next_guess] = intg([vertcat([q_eval, dq_eval]), u_eval, h_test]);
-    print "Intergration:", x_next_guess
-    
-    manip.plot(q_eval)
-    
-    traj = [[q_eval[0]+i*0.1,q_eval[1]+i*0.1] for i in range(10)]
-    manip.plotTraj(np.array(traj))
+    N = 100
+    trj = DMatrix(N,2)
+    for i in range(N):    
+        h_test = 0.001;
+        [x_next] = intg([vertcat([q_eval, dq_eval]), u_eval, h_test]);
+        q_eval = x_next[0:2]
+        dq_eval = x_next[2:4] 
+        
+        #print "q_eval:", q_eval 
+        trj[i,0] = q_eval[0]
+        trj[i,1] = q_eval[1] 
+        
+        
+    manip.plot(trj[0,:])    
+    manip.plotTraj(trj)
     
 	
