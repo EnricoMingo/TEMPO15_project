@@ -59,10 +59,10 @@ class manipulator_2links:
         self.fk_eval.init()
         
         self.fd = mul(self.H.inv(), mul(self.B,self.u)-mul(self.C,self.dq)-self.G)
-        self.fd_eval = SXFunction([self.q, self.dq, self.u], [self.fd])
-        self.fd_eval.init()
-        
-        self.plotter = { 'figure':None, 'axes':None, 'j0':None, 'j1':None, 'l0':None, 'l1':None }
+        self.fd_eval = SXFunction([vertcat([self.q, self.dq]), self.u], [vertcat([self.dq, self.fd])])
+        self.fd_eval.init()   
+		
+		self.plotter = { 'figure':None, 'axes':None, 'j0':None, 'j1':None, 'l0':None, 'l1':None }
         
     def plot(self,q):
         [ee_fk] = self.fk_eval([q])
@@ -112,6 +112,7 @@ class manipulator_2links:
                                        interval=100,
                                        blit=True)
         plt.draw()
+   
         
 if __name__=='__main__':
     manip = manipulator_2links(DMatrix.eye(2))    
@@ -120,22 +121,30 @@ if __name__=='__main__':
     print "m:", manip.m
     print "I:", manip.I
     print "H:", manip.H
-    q_eval = [0, pi/2.0]
+    q_eval = [0.0, pi/2.0]
     print "H_eval:", manip.H_eval([q_eval]) 
     print "C:", manip.C
-    dq_eval = [0.2, 0.2]
+    dq_eval = [0.0, 0.0]
     print "C_eval:", manip.C_eval([q_eval, dq_eval])
     print "G:", manip.G
     print "G_eval:", manip.G_eval([q_eval])
     print "fk:", manip.fk
     print "fk_eval:", manip.fk_eval([q_eval])
     print "fd:", manip.fd
-    u_eval = [1.0, 1.0]
-    print "fd_eval:", manip.fd_eval([q_eval, dq_eval, u_eval])
+    u_eval = [0.0, 0.0]
+    print "fd_eval:", manip.fd_eval([vertcat([q_eval, dq_eval]), u_eval])
+    
+    #SIMULATION
+    intg = simpleRK(manip.fd_eval, 10)  
+    intg.init()
+    
+    h_test = 0.01;
+    [x_next_guess] = intg([vertcat([q_eval, dq_eval]), u_eval, h_test]);
+    print "Intergration:", x_next_guess
     
     manip.plot(q_eval)
     
     traj = [[q_eval[0]+i*0.1,q_eval[1]+i*0.1] for i in range(10)]
     manip.plotTraj(np.array(traj))
     
-    
+	
