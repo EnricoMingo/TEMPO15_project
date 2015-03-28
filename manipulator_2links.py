@@ -12,7 +12,7 @@ class manipulator_2links:
         v
         y
     """
-    def __init__(self):
+    def __init__(self, B):
         self.q = SX.sym("q",2)
         self.dq = SX.sym("dq",2)
         self.l = [1.0, 1.0] #[m]
@@ -20,6 +20,10 @@ class manipulator_2links:
         self.m = [1.0, 1.0] #[Kg]
         self.I = [0.01, 0.01] #[Kg*m^2]
         self.g = 9.81 #[m/s^2]
+        
+        self.B = B
+        self.u = SX.sym("u",B.size2())
+        
         
         self.H = SX(2,2)
         self.H[0,0] = self.I[0] + self.I[1] + self.m[1]*self.l[0]**2 + 2.0*self.m[1]*self.l[0]*self.lc[1]*cos(self.q[1])
@@ -50,9 +54,13 @@ class manipulator_2links:
         self.fk[1,1] = self.fk[1,0] -self.l[1]*cos(self.q[0]+self.q[1])
         self.fk_eval = SXFunction([self.q], [self.fk])
         self.fk_eval.init()
-#        
+        
+        self.fd = mul(self.H.inv(), mul(self.B,self.u)-mul(self.C,self.dq)-self.G)
+        self.fd_eval = SXFunction([self.q, self.dq, self.u], [self.fd])
+        self.fd_eval.init()      
+        
 if __name__=='__main__':
-    manip = manipulator_2links()    
+    manip = manipulator_2links(DMatrix.eye(2))    
     print "l:", manip.l 
     print "lc:", manip.lc  
     print "m:", manip.m
@@ -67,3 +75,6 @@ if __name__=='__main__':
     print "G_eval:", manip.G_eval([q_eval])
     print "fk:", manip.fk
     print "fk_eval:", manip.fk_eval([q_eval])
+    print "fd:", manip.fd
+    u_eval = [1.0, 1.0]
+    print "fd_eval:", manip.fd_eval([q_eval, dq_eval, u_eval])
