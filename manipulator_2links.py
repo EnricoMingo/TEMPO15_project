@@ -15,15 +15,15 @@ class manipulator_2links:
         |
         o-------------->x
     """
-    def __init__(self, B):
+    def __init__(self, B, d=[1.0, 1.0], m=[1.0, 1.0], I=[0.01, 0.01], damping=0.1):
         self.q = SX.sym("q",2)
         self.dq = SX.sym("dq",2)
-        self.d = [1.0, 1.0] #[m]
+        self.d = d #[m]
         self.l = [self.d[0]/2.0, self.d[1]/2.0] #[m]
-        self.m = [1.0, 1.0] #[Kg]
-        self.I = [0.01, 0.01] #[Kg*m^2]
+        self.m = m #[Kg]
+        self.I = I #[Kg*m^2]
         self.g = 9.81 #[m/s^2]
-        self.damping = 0.1*SX.eye(2) #
+        self.damping = damping*SX.eye(2) #
         
         self.B = B
         self.u = SX.sym("u",B.size2())
