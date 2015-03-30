@@ -25,6 +25,7 @@ class manipulator_2links:
         self.g = 9.81 #[m/s^2]
         self.damping = damping*SX.eye(2) #
         
+        
         self.B = B
         self.u = SX.sym("u",B.size2())
         
@@ -64,7 +65,32 @@ class manipulator_2links:
         self.fk_eval = SXFunction([self.q], [self.fk])
         self.fk_eval.init()
         
-        self.fd = mul(self.H.inv(), mul(self.B,self.u)-mul(self.C,self.dq)-self.G-mul(self.damping,self.dq))
+        self.Jc = vertcat([jacobian(self.fk[:,0], self.q), jacobian(self.fk[:,1], self.q)])
+
+        self.v = np.array(mul(self.Jc, self.dq)).reshape(2,2).T   
+        
+        #NormalForces:
+        # Explicit expressions for normal forces fn
+        K = 10000.0
+        D = 100.0
+        heaviside = 200000.0
+        self.Fn = SX(2,1)
+        self.Fn[0] = (K*self.fk[1,0]+D*self.v[1,0])*(-1.0/(1.0+exp(2.0*heaviside*self.fk[1,0])))
+        self.Fn[1] = (K*self.fk[1,1]+D*self.v[1,1])*(-1.0/(1.0+exp(2.0*heaviside*self.fk[1,1])))
+        self.Ft = SX(2,1)
+        self.Ft[0] = 0.0
+        self.Ft[1] = 0.0        
+        self.F = SX(4,1)
+        self.F[0] = self.Fn[0]
+        self.F[1] = self.Ft[0]
+        self.F[2] = self.Fn[1]
+        self.F[3] = self.Ft[1]
+        self.F_eval = SXFunction([self.q, self.dq], [self.F])
+        self.F_eval.init()
+        
+        
+        
+        self.fd = mul(self.H.inv(), mul(self.B,self.u)-mul(self.C,self.dq)-self.G-mul(self.damping,self.dq)+mul(self.Jc.T,self.F))
         self.fd_eval = SXFunction([vertcat([self.q, self.dq]), self.u], [vertcat([self.dq, self.fd])])
         self.fd_eval.init()   
 		
@@ -120,13 +146,13 @@ class manipulator_2links:
 if __name__=='__main__':
     B = DMatrix(2,1)
     B[1] = 1.0
-    manip = manipulator_2links(B)    
+    manip = manipulator_2links(B,d=[1.0, 1.0])    
     print "l:", manip.l 
     print "d:", manip.d  
     print "m:", manip.m
     print "I:", manip.I
     print "H:", manip.H
-    q_eval = [0.0, 0.0]
+    q_eval = [pi/4., 0.0]
     print "H_eval:", manip.H_eval([q_eval]) 
     print "C:", manip.C
     dq_eval = [0.0, 0.0]
@@ -138,11 +164,14 @@ if __name__=='__main__':
     print "fd:", manip.fd
     u_eval = [0.0]
     print "fd_eval:", manip.fd_eval([vertcat([q_eval, dq_eval]), u_eval])
+    print "J':", manip.Jc.T
+    print "F:", manip.F_eval([q_eval, dq_eval])
+    print "v:", manip.v
     
     #SIMULATION 
-    intg = simpleRK(manip.fd_eval, 10)  
+    intg = simpleRK(manip.fd_eval, 1000)  
     intg.init()
-    N = 1000
+    N = 5000
     trj = DMatrix(N,2)
     for i in range(N):    
         h_test = 0.01;
@@ -153,6 +182,8 @@ if __name__=='__main__':
         #print "q_eval:", q_eval 
         trj[i,0] = q_eval[0]
         trj[i,1] = q_eval[1] 
+        
+        #print "F:", manip.F_eval([q_eval]), "for", manip.fk_eval([q_eval])
         
     manip.plotTraj(trj)
     
