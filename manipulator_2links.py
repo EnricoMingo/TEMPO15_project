@@ -15,7 +15,7 @@ class manipulator_2links:
         |
         o-------------->x
     """
-    def __init__(self, B, d=[1.0, 1.0], m=[1.0, 1.0], I=[0.01, 0.01], damping=0.1):
+    def __init__(self, B, d=[1.0, 1.0], m=[1.0, 1.0], I=[0.01, 0.01], damping=0.1, contacts=False ):
         self.q = SX.sym("q",2)
         self.dq = SX.sym("dq",2)
         self.d = d #[m]
@@ -28,6 +28,10 @@ class manipulator_2links:
         
         self.B = B
         self.u = SX.sym("u",B.size2())
+        
+        c = 0.0
+        if contacts:
+            c=1.0 
         
         
         self.H = SX(2,2)
@@ -73,8 +77,8 @@ class manipulator_2links:
         
         #NormalForces:
         # Explicit expressions for normal forces fn
-        K = 1000.0
-        D = 100.0
+        K = 5000.0
+        D = 500.0
         heaviside = 100.0
         self.Fn = SX(2,1)
         self.Fn[0] = (K*self.fk[1,0]+D*self.v[1,0])*(-1.0/(1.0+exp(2.0*heaviside*self.fk[1,0])))
@@ -92,7 +96,7 @@ class manipulator_2links:
         
         
         
-        self.fd = mul(self.H.inv(), mul(self.B,self.u)-mul(self.C,self.dq)-self.G-mul(self.damping,self.dq)+mul(self.Jc.T,self.F))
+        self.fd = mul(self.H.inv(), mul(self.B,self.u)-mul(self.C,self.dq)-self.G-mul(self.damping,self.dq)+c*mul(self.Jc.T,self.F))
         self.fd_eval = SXFunction([vertcat([self.q, self.dq]), self.u], [vertcat([self.dq, self.fd])])
         self.fd_eval.init()   
 		

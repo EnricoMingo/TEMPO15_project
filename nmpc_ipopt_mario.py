@@ -4,10 +4,10 @@ from pylab import *
 from manipulator_2links import manipulator_2links
 from time import *
 
-N = 300     # Control discretization
-T = 20.    # End time
+N = 200     # Control discretization
+T = 2.    # End time
 h = T/float(N)
-M = 100    # Number of RK4 steps
+M = 1    # Number of IRK4 steps
 
 # Declare variables (use scalar graph)
 B = DMatrix(2,1)
@@ -22,7 +22,8 @@ x  = vertcat([manip.q, manip.dq])  # states
 f = manip.fd_eval
 
 # Discrete time dynamics
-F = simpleRK(f, M)
+#F = simpleRK(f, M)
+F = simpleIRK(f, M, 2, "radau")
 F.init()
 
 # Define NLP variables
@@ -67,6 +68,7 @@ g = vertcat(g)
 # Objective function
 R = vertcat([vertcat(W['X',2:4]),vertcat(W['U'])])
 obj = mul(R.T, R)
+obj += 1000*mul( vertcat(W['X',:2]- np.array([pi/2.,0])).T, vertcat(W['X',:2]- np.array([pi/2.,0])))
 
 # Create an NLP solver object
 nlp = MXFunction(nlpIn(x=W),nlpOut(f=obj,g=g))
@@ -97,9 +99,10 @@ w_k = W(0.)
 x_current = array([0.,0.,0.,0.])
 
 x_final = [[pi/2.,0.,0.,0.]] #upright!
-
-w_min['X',N] = x_final
-w_max['X',N] = x_final
+#w_k["U"] = 5.
+#w_k["X",:] = x_final*(N+1)
+w_min['X',-1] = x_final
+w_max['X',-1] = x_final
 
 #t = 0
 for i in range(1):
