@@ -67,13 +67,15 @@ class manipulator_2links:
         
         self.Jc = vertcat([jacobian(self.fk[:,0], self.q), jacobian(self.fk[:,1], self.q)])
 
-        self.v = np.array(mul(self.Jc, self.dq)).reshape(2,2).T   
+        self.v = mul(self.Jc, self.dq).reshape([2,2])
+        self.v_eval = SXFunction([self.q, self.dq], [self.v])
+        self.v_eval.init()
         
         #NormalForces:
         # Explicit expressions for normal forces fn
-        K = 10000.0
+        K = 1000.0
         D = 100.0
-        heaviside = 200000.0
+        heaviside = 100.0
         self.Fn = SX(2,1)
         self.Fn[0] = (K*self.fk[1,0]+D*self.v[1,0])*(-1.0/(1.0+exp(2.0*heaviside*self.fk[1,0])))
         self.Fn[1] = (K*self.fk[1,1]+D*self.v[1,1])*(-1.0/(1.0+exp(2.0*heaviside*self.fk[1,1])))
