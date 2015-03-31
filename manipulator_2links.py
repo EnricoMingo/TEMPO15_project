@@ -96,7 +96,10 @@ class manipulator_2links:
         self.fd_eval = SXFunction([vertcat([self.q, self.dq]), self.u], [vertcat([self.dq, self.fd])])
         self.fd_eval.init()   
 		
-        self.plotter = { 'figure':None, 'axes':None, 'j0':None, 'j1':None, 'l0':None, 'l1':None }
+        self.plotter = { 'figure':None, 'axes':None, 
+                         'j0':None, 'j1':None, 
+                         'l0':None, 'l1':None,
+                         'terrain': None}
         
     def plot(self,q):
         [ee_fk] = self.fk_eval([q])
@@ -122,9 +125,13 @@ class manipulator_2links:
                                  markerfacecolor='r', 
                                  markeredgecolor='r', 
                                  alpha=0.5)
+            self.plotter['terrain'] = plt.Line2D((-4,4), (-.1,-.1), 
+                                 lw=2., 
+                                 ls='-')
                                  
             self.plotter['axes'].add_line(self.plotter['l0'])
             self.plotter['axes'].add_line(self.plotter['l1'])
+            self.plotter['axes'].add_line(self.plotter['terrain'])
         
         else:
             self.plotter['l0'].set_data(((0, j1[0]), (0,j1[1])))
