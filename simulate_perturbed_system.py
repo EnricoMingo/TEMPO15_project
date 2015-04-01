@@ -26,7 +26,8 @@ manip_perturbed = manipulator_2links(B, contacts=True, K = 4900.0)
 F_sim = simpleIRK(manip_perturbed.fd_eval, M, 2, "radau")
 F_sim.init()
 
-u = pickle.load(open('npmc_u.p'))
+u = pickle.load(open('nmpc_u_perturbed_4900.p'))
+#u = pickle.load(open('nmpc_u_perturbed_4800.p'))
 x_0 = array([0.,0.,0.,0.])
 
 x_k = x_0

@@ -113,6 +113,7 @@ w_min['X',-1] = x_final
 w_max['X',-1] = x_final
 
 u_all = []
+x_all = []
 
 t = 0
 for i in range(N):
@@ -140,6 +141,7 @@ for i in range(N):
     
     # Simulate the system with this control
     [x_current] = F_sim([x_current, u_nmpc, h])
+    x_all.append([x_current[0], x_current[1]])
   
     t += T/N
     
@@ -153,6 +155,6 @@ for i in range(N):
 pickle.dump(np.array(u_all), open('nmpc_u_perturbed_4900.p','wb'))
 
 
-#manip.plotTraj(np.array(q_all),t=T/N)
+#manip.plotTraj(np.array(x_all),t=T/N)
 #manip.plotTraj(np.array(q_all),t=T/N,fileName = 'swingup_nmpc.mp4')
 #manip.plotTraj(np.array(vertcat(sol["X",:,0:2])).reshape(N+1,2),t=T/N)
