@@ -15,7 +15,7 @@ class manipulator_2links:
         |
         o-------------->x
     """
-    def __init__(self, B, d=[1.0, 1.0], m=[1.0, 1.0], I=[0.01, 0.01], damping=0.1, contacts=False ):
+    def __init__(self, B, d=[1.0, 1.0], m=[1.0, 1.0], I=[0.01, 0.01], damping=0.1, K=5000.0, D=500.0, contacts=False ):
         self.q = SX.sym("q",2)
         self.dq = SX.sym("dq",2)
         self.d = d #[m]
@@ -25,8 +25,8 @@ class manipulator_2links:
         self.g = 9.81 #[m/s^2]
         self.damping = damping*SX.eye(2) #
         
-        self.K =5000.0  # spring stiffness
-        self.D = 500.0  # spring damping
+        self.K = K  # spring stiffness
+        self.D = D  # spring damping
         
         self.B = B
         self.u = SX.sym("u",B.size2())
@@ -205,6 +205,6 @@ if __name__=='__main__':
         
         #print "F:", manip.F_eval([q_eval]), "for", manip.fk_eval([q_eval])
         
-    manip.plotTraj(trj,fileName='ex.mp4')
+    manip.plotTraj(trj,fileName='simulation.mp4')
     
 	
