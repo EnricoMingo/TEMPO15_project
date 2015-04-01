@@ -25,6 +25,8 @@ class manipulator_2links:
         self.g = 9.81 #[m/s^2]
         self.damping = damping*SX.eye(2) #
         
+        self.K =5000.0  # spring stiffness
+        self.D = 500.0  # spring damping
         
         self.B = B
         self.u = SX.sym("u",B.size2())
@@ -77,12 +79,10 @@ class manipulator_2links:
         
         #NormalForces:
         # Explicit expressions for normal forces fn
-        K =5000.0
-        D = 500.0
         heaviside = 100.0
         self.Fn = SX(2,1)
-        self.Fn[0] = (K*self.fk[1,0]+D*self.v[1,0])*(-1.0/(1.0+exp(2.0*heaviside*self.fk[1,0])))
-        self.Fn[1] = (K*self.fk[1,1]+D*self.v[1,1])*(-1.0/(1.0+exp(2.0*heaviside*self.fk[1,1])))
+        self.Fn[0] = (self.K*self.fk[1,0]+self.D*self.v[1,0])*(-1.0/(1.0+exp(2.0*heaviside*self.fk[1,0])))
+        self.Fn[1] = (self.K*self.fk[1,1]+self.D*self.v[1,1])*(-1.0/(1.0+exp(2.0*heaviside*self.fk[1,1])))
         self.Ft = SX(2,1)
         self.Ft[0] = 0.0
         self.Ft[1] = 0.0        
@@ -137,6 +137,9 @@ class manipulator_2links:
             self.plotter['axes'].add_line(self.plotter['l1'])
             if self.c:
                 self.plotter['axes'].add_line(self.plotter['terrain'])
+            
+            mencoderWriter = animation.writers['mencoder']
+            self.plotter['writer'] = mencoderWriter(fps=15, metadata=dict(artist='Me'), bitrate=1800)
         
         else:
             self.plotter['l0'].set_data(((0, j1[0]), (0,j1[1])))
