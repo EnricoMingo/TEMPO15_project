@@ -18,7 +18,7 @@ M = 1    # Number of IRK4 steps
 
 B = DMatrix(2,1)
 B[1] = 1.0
-manip_perturbed = manipulator_2links(B, contacts=True, K = 4900.0)
+manip_perturbed = manipulator_2links(B, contacts=True, K = 4800.0)
 
 #u  = manip.u    # control
 #x  = vertcat([manip.q, manip.dq])  # states
@@ -26,8 +26,8 @@ manip_perturbed = manipulator_2links(B, contacts=True, K = 4900.0)
 F_sim = simpleIRK(manip_perturbed.fd_eval, M, 2, "radau")
 F_sim.init()
 
-u = pickle.load(open('nmpc_u_perturbed_4900.p'))
-#u = pickle.load(open('nmpc_u_perturbed_4800.p'))
+#u = pickle.load(open('nmpc_u_perturbed_4900.p'))
+u = pickle.load(open('nmpc_u_perturbed_4800.p'))
 x_0 = array([0.,0.,0.,0.])
 
 x_k = x_0

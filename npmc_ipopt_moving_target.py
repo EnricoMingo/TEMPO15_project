@@ -14,7 +14,7 @@ M = 1    # Number of IRK4 steps
 B = DMatrix(2,1)
 B[1] = 1.0
 manip = manipulator_2links(B, contacts=True)
-manip_perturbed = manipulator_2links(B, contacts=True, K = 4900.0)
+manip_perturbed = manipulator_2links(B, contacts=True, K = 4800.0)
 
 u  = manip.u    # control
 x  = vertcat([manip.q, manip.dq])  # states
@@ -160,10 +160,10 @@ for i in range(200):
     w_k["X",-1] = sol["X",-1]
     w_k["U",-1] = sol["U",-1]
 
-#pickle.dump(np.array(u_all), open('nmpc_u_perturbed_4900.p','wb'))
-#pickle.dump(sol["U"], open('nmpc_u_perturbed_4900_partial_20.p','wb'))
-
-
+#pickle.dump(np.array(u_all), open('nmpc_u_perturbed_4800.p','wb'))
 #manip.plotTraj(np.array(x_all),t=T/N)
+
+
+#pickle.dump(sol["U"], open('nmpc_u_perturbed_4900_partial_20.p','wb'))
 #manip.plotTraj(np.array(q_all),t=T/N,fileName = 'swingup_nmpc.mp4')
 #manip.plotTraj(np.array(vertcat(sol["X",:,0:2])).reshape(N+1,2),t=T/N)
