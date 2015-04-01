@@ -149,7 +149,7 @@ class manipulator_2links:
         return [self.plotter['l0'], self.plotter['l1']]
         
     def plotTraj(self,qTraj, t=.001, fileName=None):
-        
+        self.plotter['figure'] = None
         self.plot(qTraj[0,:])
         p = lambda i : self.plot(qTraj[i,:])
         anim = animation.FuncAnimation(self.plotter['figure'], 
