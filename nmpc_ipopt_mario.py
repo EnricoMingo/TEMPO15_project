@@ -138,4 +138,6 @@ for i in range(1):
     #w_k["X",-1] = sol["X",-1]
     #w_k["U",-1] = sol["U",-1]
 
-manip.plotTraj(np.array(vertcat(sol["X",:,0:2])).reshape(N+1,2),t=T/N)
+manip.plotTraj(np.array(vertcat(sol["X",:,0:2])).reshape(N+1,2),
+               t=T/N,
+               fileName='environment_aware_swingup.mp4')

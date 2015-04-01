@@ -1,7 +1,7 @@
 from casadi import *
 from numpy import *
 from matplotlib import pyplot as plt
-from matplotlib import animation
+import matplotlib.animation as animation
 import time
 
 class manipulator_2links:
@@ -145,7 +145,7 @@ class manipulator_2links:
         plt.draw()
         return [self.plotter['l0'], self.plotter['l1']]
         
-    def plotTraj(self,qTraj,t=.001):
+    def plotTraj(self,qTraj, t=.001, fileName=None):
         
         self.plot(qTraj[0,:])
         p = lambda i : self.plot(qTraj[i,:])
@@ -155,6 +155,9 @@ class manipulator_2links:
                                        interval=t*1000.,
                                        blit=True)
         plt.draw()
+        
+        if fileName is not None:
+            anim.save(fileName, writer=self.plotter['writer'])
    
         
 if __name__=='__main__':
@@ -199,6 +202,6 @@ if __name__=='__main__':
         
         #print "F:", manip.F_eval([q_eval]), "for", manip.fk_eval([q_eval])
         
-    manip.plotTraj(trj)
+    manip.plotTraj(trj,fileName='ex.mp4')
     
 	
