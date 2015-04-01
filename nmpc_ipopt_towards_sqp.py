@@ -14,6 +14,7 @@ M = 1    # Number of IRK4 steps
 B = DMatrix(2,1)
 B[1] = 1.0
 manip = manipulator_2links(B, contacts=True)
+manip_perturbed = manipulator_2links(B, contacts=True, K = 4900.0)
 
 u  = manip.u    # control
 x  = vertcat([manip.q, manip.dq])  # states
@@ -26,6 +27,10 @@ f = manip.fd_eval
 #F = simpleRK(f, M)
 F = simpleIRK(f, M, 2, "radau")
 F.init()
+
+F_sim = simpleIRK(manip_perturbed.fd_eval, M, 2, "radau")
+F_sim.init()
+
 
 # Define NLP variables
 W = struct_symMX([
@@ -96,7 +101,8 @@ w_max = W( inf)
 w_min["U",:] = -20.
 w_max["U",:] = 20.
 
-w_k = W(0.)
+w_k = pickle.load(open('npmc_nominal_sol.p'))
+
 x_0 = array([0.,0.,0.,0.])
 x_current = x_0
 
@@ -106,8 +112,10 @@ x_final = [[pi/2.,0.,0.,0.]] #upright!
 w_min['X',-1] = x_final
 w_max['X',-1] = x_final
 
-#t = 0
-for i in range(1):
+u_all = []
+
+t = 0
+for i in range(N):
 
     w_min["X",0] = x_current
     w_max["X",0] = x_current
@@ -121,37 +129,30 @@ for i in range(1):
     tic = time()
     nlp_solver.evaluate()
     toc = time()
-    print "solver needed:",toc-tic,"[s]"
+    print "solver needed:",toc-tic,"[s] at iteration", i
     
     
     # Extract from the solution the first control
     sol = W(nlp_solver.getOutput("x"))
     u_nmpc = sol["U",0]
+    u_all.append(u_nmpc)
+    x_k = sol['X']
     
     # Simulate the system with this control
-    #[x_total] = F([x_0, u_nmpc, h])
+    [x_current] = F_sim([x_current, u_nmpc, h])
   
-    #t += T/N
+    t += T/N
     
     # Shift the time to have a better initial guess
     # For the next time horizon
-    #w_k["X",:-1] = sol["X",1:]
-    #w_k["U",:-1] = sol["U",1:]
-    #w_k["X",-1] = sol["X",-1]
-    #w_k["U",-1] = sol["U",-1]
+    w_k["X",:-1] = sol["X",1:]
+    w_k["U",:-1] = sol["U",1:]
+    w_k["X",-1] = sol["X",-1]
+    w_k["U",-1] = sol["U",-1]
 
-    # Simulate the system with this control
-#x_k = x_0
-#q_all = []
-#q_all.append(np.array(x_k[0:2]).reshape(1,2)[0])
-#for k in range(N):
-#    [x_next] = F([x_k, sol['U',k], h])
-#    q_all.append([x_next[0],x_next[1]])
-#    x_k = x_next
+pickle.dump(np.array(u_all), open('nmpc_u_perturbed_4900.p','wb'))
+
 
 #manip.plotTraj(np.array(q_all),t=T/N)
 #manip.plotTraj(np.array(q_all),t=T/N,fileName = 'swingup_nmpc.mp4')
-manip.plotTraj(np.array(vertcat(sol["X",:,0:2])).reshape(N+1,2),t=T/N)
-
-pickle.dump(sol['U'], open('npmc_u.p','wb'))
-pickle.dump(sol, open('npmc_nominal_sol.p','wb'))
+#manip.plotTraj(np.array(vertcat(sol["X",:,0:2])).reshape(N+1,2),t=T/N)

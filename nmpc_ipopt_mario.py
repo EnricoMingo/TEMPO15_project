@@ -141,3 +141,6 @@ for i in range(1):
 manip.plotTraj(np.array(vertcat(sol["X",:,0:2])).reshape(N+1,2),
                t=T/N,
                fileName='environment_aware_swingup.mp4')
+
+pickle.dump(sol['U'], open('npmc_u.p','wb'))
+pickle.dump(sol, open('npmc_nominal_sol.p','wb'))
