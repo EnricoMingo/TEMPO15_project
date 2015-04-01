@@ -29,9 +29,9 @@ class manipulator_2links:
         self.B = B
         self.u = SX.sym("u",B.size2())
         
-        c = 0.0
+        self.c = 0.0
         if contacts:
-            c=1.0 
+            self.c=1.0 
         
         
         self.H = SX(2,2)
@@ -77,7 +77,7 @@ class manipulator_2links:
         
         #NormalForces:
         # Explicit expressions for normal forces fn
-        K = 5000.0
+        K =5000.0
         D = 500.0
         heaviside = 100.0
         self.Fn = SX(2,1)
@@ -96,7 +96,7 @@ class manipulator_2links:
         
         
         
-        self.fd = mul(self.H.inv(), mul(self.B,self.u)-mul(self.C,self.dq)-self.G-mul(self.damping,self.dq)+c*mul(self.Jc.T,self.F))
+        self.fd = mul(self.H.inv(), mul(self.B,self.u)-mul(self.C,self.dq)-self.G-mul(self.damping,self.dq)+self.c*mul(self.Jc.T,self.F))
         self.fd_eval = SXFunction([vertcat([self.q, self.dq]), self.u], [vertcat([self.dq, self.fd])])
         self.fd_eval.init()   
 		
@@ -129,13 +129,14 @@ class manipulator_2links:
                                  markerfacecolor='r', 
                                  markeredgecolor='r', 
                                  alpha=0.5)
-            self.plotter['terrain'] = plt.Line2D((-4,4), (-.1,-.1), 
+            self.plotter['terrain'] = plt.Line2D((-4,4), (-.05,-.05), 
                                  lw=2., 
                                  ls='-')
                                  
             self.plotter['axes'].add_line(self.plotter['l0'])
             self.plotter['axes'].add_line(self.plotter['l1'])
-            self.plotter['axes'].add_line(self.plotter['terrain'])
+            if self.c:
+                self.plotter['axes'].add_line(self.plotter['terrain'])
         
         else:
             self.plotter['l0'].set_data(((0, j1[0]), (0,j1[1])))
@@ -159,7 +160,7 @@ class manipulator_2links:
 if __name__=='__main__':
     B = DMatrix(2,1)
     B[1] = 1.0
-    manip = manipulator_2links(B,d=[1.0, 1.0])    
+    manip = manipulator_2links(B,d=[1.0, 1.0],contacts=True)    
     print "l:", manip.l 
     print "d:", manip.d  
     print "m:", manip.m
@@ -182,7 +183,7 @@ if __name__=='__main__':
     print "v:", manip.v
     
     #SIMULATION 
-    intg = simpleRK(manip.fd_eval, 1000)  
+    intg = simpleIRK(manip.fd_eval, 10)  
     intg.init()
     N = 5000
     trj = DMatrix(N,2)

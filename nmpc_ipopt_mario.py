@@ -12,7 +12,7 @@ M = 1    # Number of IRK4 steps
 # Declare variables (use scalar graph)
 B = DMatrix(2,1)
 B[1] = 1.0
-manip = manipulator_2links(B)
+manip = manipulator_2links(B, contacts=True)
 
 u  = manip.u    # control
 x  = vertcat([manip.q, manip.dq])  # states
