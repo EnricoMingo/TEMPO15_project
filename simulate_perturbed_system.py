@@ -33,9 +33,20 @@ x_0 = array([0.,0.,0.,0.])
 x_k = x_0
 q_all = []
 q_all.append(np.array(x_k[0:2]).reshape(1,2)[0])
+W = struct_symMX([
+      (
+        entry("X",shape=(4,1),repeat=N+1),
+        entry("U",shape=(1,1),repeat=N)
+      )
+])
+sol=W(0)
+sol['X',0]=x_0
 for k in range(N):
     [x_next] = F_sim([x_k, u[k], h])
     q_all.append([x_next[0],x_next[1]])
     x_k = x_next
-
-manip_perturbed.plotTraj(np.array(q_all),t=T/N,fileName = 'swingup_perturbed.mp4')
+    sol['X',k+1]=x_next
+    sol['U',k]=u[k]
+    
+pickle.dump(sol, open('final.p','wb'))
+#manip_perturbed.plotTraj(np.array(q_all),t=T/N,fileName = 'swingup_perturbed.mp4')

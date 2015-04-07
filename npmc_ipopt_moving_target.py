@@ -74,7 +74,7 @@ g = vertcat(g)
 # Objective function
 R = vertcat([vertcat(W['X',2:4]),vertcat(W['U'])])
 obj = mul(R.T, R)
-obj += 1000*mul( vertcat(W['X',:2]- np.array([pi/2.,0])).T, vertcat(W['X',:2]- np.array([pi/2.,0])))
+obj += 10*mul( vertcat(W['X',:2]- np.array([pi/2.,0])).T, vertcat(W['X',:2]- np.array([pi/2.,0])))
 
 # Create an NLP solver object
 nlp = MXFunction(nlpIn(x=W),nlpOut(f=obj,g=g))
